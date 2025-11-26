@@ -10,7 +10,7 @@ use crate::{
         Episode, EpisodesPage, FilterCategory, SearchFilter, Series, SeriesPage, Video,
     },
     request::Request,
-    wasi::http::types::{ErrorCode, Method},
+    wasi::http::types::{ErrorCode, Headers, Method, OutgoingRequest, Scheme},
 };
 
 wit_bindgen::generate!({
@@ -79,7 +79,24 @@ impl Guest for SampleExtension {
 
     #[allow(unused_variables)]
     fn get_series_videos(series_id: String, episode_id: String) -> Result<Vec<Video>, ErrorCode> {
-        Err(ErrorCode::InternalError(Some("Not implemented".to_owned())))
+        let sample_video = Video {
+            http_resource: {
+                let outgoing = OutgoingRequest::new(Headers::new());
+                outgoing.set_method(&Method::Get).unwrap();
+                outgoing.set_scheme(Some(&Scheme::Https)).unwrap();
+                outgoing
+                    .set_authority(Some("commondatastorage.googleapis.com"))
+                    .unwrap();
+                outgoing
+                    .set_path_with_query(Some("/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
+                    .unwrap();
+                outgoing
+            },
+            server: "googleapis".to_owned(),
+            resolution: (1920, 1080),
+        };
+
+        Ok(vec![sample_video])
     }
 }
 
