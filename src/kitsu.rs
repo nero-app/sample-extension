@@ -10,6 +10,12 @@ use crate::{
 #[derive(Debug, Deserialize)]
 pub struct ApiResponse<T> {
     pub data: T,
+    pub links: Option<PaginationLinks>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PaginationLinks {
+    pub next: Option<String>,
 }
 
 pub type SearchApiResponse = ApiResponse<Vec<AnimeData>>;

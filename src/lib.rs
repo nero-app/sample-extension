@@ -19,6 +19,7 @@ wit_bindgen::generate!({
 });
 
 const KITSU_URL: &str = "https://kitsu.io/api/edge";
+const PAGE_LIMIT: u16 = 10;
 
 struct SampleExtension;
 
@@ -54,13 +55,25 @@ impl Guest for SampleExtension {
         series_id: String,
         page: Option<u16>,
     ) -> Result<EpisodesPage, ErrorCode> {
-        let url = format!("{KITSU_URL}/episodes?filter[mediaId]={series_id}");
+        let page_num = page.unwrap_or(1);
+        let page_index = page_num.saturating_sub(1) as u32;
+        let offset = page_index * (PAGE_LIMIT as u32);
+
+        let url = format!(
+            "{KITSU_URL}/episodes?filter[mediaId]={}&page[limit]={}&page[offset]={}",
+            series_id, PAGE_LIMIT, offset
+        );
+
         let request = Request::new(Method::Get, Url::parse(&url).unwrap());
         let response = request.send()?.json::<EpisodesApiResponse>()?;
 
         Ok(EpisodesPage {
             episodes: response.data.into_iter().map(Episode::from).collect(),
-            has_next_page: false,
+            has_next_page: response
+                .links
+                .as_ref()
+                .and_then(|links| links.next.as_ref())
+                .is_some(),
         })
     }
 
