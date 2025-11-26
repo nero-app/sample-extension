@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use url::Url;
 
 use crate::{
@@ -7,7 +7,7 @@ use crate::{
     wasi::http::types::{Fields, Method, OutgoingRequest},
 };
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct ApiResponse<T> {
     pub data: T,
 }
@@ -16,7 +16,7 @@ pub type SearchApiResponse = ApiResponse<Vec<AnimeData>>;
 pub type AnimeApiResponse = ApiResponse<AnimeData>;
 pub type EpisodesApiResponse = ApiResponse<Vec<EpisodeData>>;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct AnimeData {
     pub id: String,
     #[serde(rename = "type")]
@@ -32,7 +32,7 @@ impl From<AnimeData> for Series {
             poster_resource: anime
                 .attributes
                 .poster_image
-                .map(|img| img.original)
+                .and_then(|img| img.original)
                 .and_then(|url| Url::parse(&url).ok())
                 .map(|url| OutgoingRequest::from_url(&url, &Method::Get, Fields::new())),
             synopsis: anime.attributes.synopsis,
@@ -41,7 +41,7 @@ impl From<AnimeData> for Series {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct AnimeAttributes {
     #[serde(rename = "canonicalTitle")]
     pub canonical_title: String,
@@ -50,7 +50,7 @@ pub struct AnimeAttributes {
     pub poster_image: Option<ImageResource>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct EpisodeData {
     pub id: String,
     pub attributes: EpisodeAttributes,
@@ -61,28 +61,28 @@ impl From<EpisodeData> for Episode {
         Episode {
             id: episode.id,
             number: episode.attributes.number,
-            title: Some(episode.attributes.canonical_title),
+            title: episode.attributes.canonical_title,
             description: episode.attributes.synopsis,
             thumbnail_resource: episode
                 .attributes
                 .thumbnail
-                .map(|img| img.original)
+                .and_then(|img| img.original)
                 .and_then(|url| Url::parse(&url).ok())
                 .map(|url| OutgoingRequest::from_url(&url, &Method::Get, Fields::new())),
         }
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct EpisodeAttributes {
     pub number: u16,
     #[serde(rename = "canonicalTitle")]
-    pub canonical_title: String,
+    pub canonical_title: Option<String>,
     pub synopsis: Option<String>,
     pub thumbnail: Option<ImageResource>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct ImageResource {
-    pub original: String,
+    pub original: Option<String>,
 }
