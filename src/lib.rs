@@ -7,7 +7,8 @@ use crate::{
     exports::nero::extension::extractor::Guest,
     kitsu::{AnimeApiResponse, EpisodesApiResponse, SearchApiResponse},
     nero::extension::types::{
-        Episode, EpisodesPage, FilterCategory, SearchFilter, Series, SeriesPage, Video,
+        Episode, EpisodesPage, FilterCategory, MediaResource, SearchFilter, Series, SeriesPage,
+        Video,
     },
     request::Request,
     wasi::http::types::{ErrorCode, Headers, Method, OutgoingRequest, Scheme},
@@ -80,7 +81,7 @@ impl Guest for SampleExtension {
     #[allow(unused_variables)]
     fn get_series_videos(series_id: String, episode_id: String) -> Result<Vec<Video>, ErrorCode> {
         let sample_video = Video {
-            http_resource: {
+            media_resource: {
                 let outgoing = OutgoingRequest::new(Headers::new());
                 outgoing.set_method(&Method::Get).unwrap();
                 outgoing.set_scheme(Some(&Scheme::Https)).unwrap();
@@ -90,7 +91,7 @@ impl Guest for SampleExtension {
                 outgoing
                     .set_path_with_query(Some("/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
                     .unwrap();
-                outgoing
+                MediaResource::HttpRequest(outgoing)
             },
             server: "googleapis".to_owned(),
             resolution: (1920, 1080),

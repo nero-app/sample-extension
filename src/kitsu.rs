@@ -3,7 +3,7 @@ use url::Url;
 
 use crate::{
     exports::nero::extension::extractor::Series,
-    nero::extension::types::Episode,
+    nero::extension::types::{Episode, MediaResource},
     wasi::http::types::{Fields, Method, OutgoingRequest},
 };
 
@@ -40,7 +40,10 @@ impl From<AnimeData> for Series {
                 .poster_image
                 .and_then(|img| img.original)
                 .and_then(|url| Url::parse(&url).ok())
-                .map(|url| OutgoingRequest::from_url(&url, &Method::Get, Fields::new())),
+                .map(|url| {
+                    let req = OutgoingRequest::from_url(&url, &Method::Get, Fields::new());
+                    MediaResource::HttpRequest(req)
+                }),
             synopsis: anime.attributes.synopsis,
             type_: Some(anime.type_),
         }
@@ -74,7 +77,10 @@ impl From<EpisodeData> for Episode {
                 .thumbnail
                 .and_then(|img| img.original)
                 .and_then(|url| Url::parse(&url).ok())
-                .map(|url| OutgoingRequest::from_url(&url, &Method::Get, Fields::new())),
+                .map(|url| {
+                    let req = OutgoingRequest::from_url(&url, &Method::Get, Fields::new());
+                    MediaResource::HttpRequest(req)
+                }),
         }
     }
 }
