@@ -1,10 +1,10 @@
+use request::wasi::http::types::{Fields, Method, OutgoingRequest};
 use serde::Deserialize;
 use url::Url;
 
 use crate::{
     exports::nero::extension::extractor::Series,
     nero::extension::types::{Episode, MediaResource},
-    wasi::http::types::{Fields, Method, OutgoingRequest},
 };
 
 #[derive(Debug, Deserialize)]

@@ -1,6 +1,11 @@
 mod kitsu;
-mod request;
-
+use request::{
+    Request,
+    wasi::http::{
+        outgoing_handler::OutgoingRequest,
+        types::{ErrorCode, Headers, Method, Scheme},
+    },
+};
 use url::Url;
 
 use crate::{
@@ -10,12 +15,15 @@ use crate::{
         Episode, EpisodesPage, FilterCategory, MediaResource, SearchFilter, Series, SeriesPage,
         Video,
     },
-    request::Request,
-    wasi::http::types::{ErrorCode, Headers, Method, OutgoingRequest, Scheme},
 };
 
 wit_bindgen::generate!({
+    path: "../wit",
     world: "nero:extension/extension",
+    with: {
+        "wasi:http/outgoing-handler@0.2.7": request::wasi::http::outgoing_handler,
+        "wasi:http/types@0.2.7": request::wasi::http::types,
+    },
     generate_all,
 });
 
@@ -29,6 +37,7 @@ impl Guest for SampleExtension {
         Err(ErrorCode::InternalError(Some("Not implemented".to_owned())))
     }
 
+    #[allow(unused_variables)]
     fn search(
         query: String,
         page: Option<u16>,

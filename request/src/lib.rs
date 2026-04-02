@@ -1,40 +1,24 @@
-#![allow(dead_code)]
+mod error;
 
 use serde::de::DeserializeOwned;
-use thiserror::Error;
 use url::Url;
 
-use crate::wasi::{
-    http::{
-        outgoing_handler::handle,
-        types::{
-            ErrorCode, Fields, HeaderError, IncomingBody, Method, OutgoingBody, OutgoingRequest,
-            Scheme,
+use crate::{
+    error::Error,
+    wasi::{
+        http::{
+            outgoing_handler::handle,
+            types::{Fields, IncomingBody, Method, OutgoingBody, OutgoingRequest, Scheme},
         },
+        io::streams::InputStream,
     },
-    io::streams::InputStream,
 };
 
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("JSON serialization error: {0}")]
-    SerdeJson(#[from] serde_json::Error),
-
-    #[error("Header error: {0}")]
-    Header(#[from] HeaderError),
-
-    #[error("HTTP error")]
-    Http(#[from] ErrorCode),
-}
-
-impl From<Error> for ErrorCode {
-    fn from(error: Error) -> Self {
-        match error {
-            Error::Http(error_code) => error_code,
-            other => ErrorCode::InternalError(Some(other.to_string())),
-        }
-    }
-}
+wit_bindgen::generate!({
+    path: "../wit",
+    world: "wasi:http/imports",
+    generate_all,
+});
 
 pub struct Request {
     method: Method,

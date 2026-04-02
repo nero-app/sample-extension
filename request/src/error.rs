@@ -1,0 +1,24 @@
+use thiserror::Error;
+
+use crate::wasi::http::types::{ErrorCode, HeaderError};
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("JSON serialization error: {0}")]
+    SerdeJson(#[from] serde_json::Error),
+
+    #[error("Header error: {0}")]
+    Header(#[from] HeaderError),
+
+    #[error("HTTP error")]
+    Http(#[from] ErrorCode),
+}
+
+impl From<Error> for ErrorCode {
+    fn from(error: Error) -> Self {
+        match error {
+            Error::Http(error_code) => error_code,
+            other => ErrorCode::InternalError(Some(other.to_string())),
+        }
+    }
+}
