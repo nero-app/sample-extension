@@ -1,3 +1,5 @@
+use std::str;
+
 use thiserror::Error;
 
 use crate::wasi::http::types::{ErrorCode, HeaderError};
@@ -6,6 +8,9 @@ use crate::wasi::http::types::{ErrorCode, HeaderError};
 pub enum Error {
     #[error("JSON serialization error: {0}")]
     SerdeJson(#[from] serde_json::Error),
+
+    #[error("Invalid UTF-8 in body: {0}")]
+    InvalidUtf8InBody(str::Utf8Error),
 
     #[error("Header error: {0}")]
     Header(#[from] HeaderError),
