@@ -6,6 +6,7 @@ use crate::wasi::http::types::{ErrorCode, HeaderError};
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[cfg(feature = "json")]
     #[error("JSON serialization error: {0}")]
     SerdeJson(#[from] serde_json::Error),
 

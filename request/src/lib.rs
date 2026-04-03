@@ -1,7 +1,6 @@
 pub mod error;
 pub mod middleware;
 
-use serde::de::DeserializeOwned;
 use url::Url;
 
 use crate::{
@@ -138,6 +137,7 @@ impl<'m> Request<'m> {
         self.header("Content-Length", &body_length.to_string())
     }
 
+    #[cfg(feature = "json")]
     pub fn with_json<T: serde::ser::Serialize>(self, body: &T) -> Result<Self, Error> {
         self.raw
             .headers
@@ -207,7 +207,8 @@ impl Response {
         self.body
     }
 
-    pub fn json<T: DeserializeOwned>(self) -> Result<T, Error> {
+    #[cfg(feature = "json")]
+    pub fn json<T: serde::de::DeserializeOwned>(self) -> Result<T, Error> {
         let str = self.as_str()?;
         let json = serde_json::from_str(str)?;
         Ok(json)

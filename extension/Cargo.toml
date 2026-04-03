@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-request = { path = "../request" }
+request = { path = "../request", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 url = { workspace = true }
 wit-bindgen = { workspace = true }
