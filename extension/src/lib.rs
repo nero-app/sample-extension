@@ -1,4 +1,6 @@
+mod cache;
 mod kitsu;
+
 use request::{
     Request,
     wasi::http::{
@@ -9,6 +11,7 @@ use request::{
 use url::Url;
 
 use crate::{
+    cache::CacheMiddleware,
     exports::nero::extension::extractor::Guest,
     kitsu::{AnimeApiResponse, EpisodesApiResponse, SearchApiResponse},
     nero::extension::types::{
@@ -25,6 +28,7 @@ wit_bindgen::generate!({
         "wasi:http/types@0.2.7": request::wasi::http::types,
     },
     generate_all,
+    features: ["extension-keyvalue-ttl"]
 });
 
 const KITSU_URL: &str = "https://kitsu.io/api/edge";
@@ -44,7 +48,8 @@ impl Guest for SampleExtension {
         filters: Vec<SearchFilter>,
     ) -> Result<SeriesPage, ErrorCode> {
         let url = format!("{KITSU_URL}/anime?filter[text]={query}");
-        let request = Request::new(Method::Get, Url::parse(&url).unwrap());
+        let request = Request::new(Method::Get, Url::parse(&url).unwrap())
+            .middleware(CacheMiddleware::default());
         let response = request.send()?.json::<SearchApiResponse>()?;
 
         Ok(SeriesPage {
@@ -55,7 +60,8 @@ impl Guest for SampleExtension {
 
     fn get_series_info(series_id: String) -> Result<Series, ErrorCode> {
         let url = format!("{KITSU_URL}/anime/{series_id}");
-        let request = Request::new(Method::Get, Url::parse(&url).unwrap());
+        let request = Request::new(Method::Get, Url::parse(&url).unwrap())
+            .middleware(CacheMiddleware::default());
         let response = request.send()?.json::<AnimeApiResponse>()?;
 
         Ok(response.data.into())
@@ -74,7 +80,8 @@ impl Guest for SampleExtension {
             series_id, PAGE_LIMIT, offset
         );
 
-        let request = Request::new(Method::Get, Url::parse(&url).unwrap());
+        let request = Request::new(Method::Get, Url::parse(&url).unwrap())
+            .middleware(CacheMiddleware::default());
         let response = request.send()?.json::<EpisodesApiResponse>()?;
 
         Ok(EpisodesPage {
